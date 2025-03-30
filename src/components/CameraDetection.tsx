@@ -1,6 +1,6 @@
 
 import { useState, useRef } from 'react';
-import { Camera, StopCircle, Loader2 } from "lucide-react";
+import { Camera, StopCircle, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { useIssues } from "@/context/IssueContext";
@@ -11,6 +11,7 @@ const CameraDetection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -110,15 +111,83 @@ const CameraDetection = () => {
     }
   };
   
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    setIsProcessing(true);
+    
+    try {
+      // Detect issue from uploaded image
+      const detectedType = await detectIssueFromImage(file);
+      
+      if (detectedType) {
+        toast({
+          title: "Issue Detected!",
+          description: `Detected: ${detectedType}`,
+        });
+        
+        setSelectedIssueType(detectedType);
+        navigate('/report');
+      } else {
+        toast({
+          title: "No Issue Detected",
+          description: "Could not identify any specific issue. Please try again or report manually.",
+        });
+      }
+    } catch (error) {
+      console.error("Error processing uploaded image:", error);
+      toast({
+        title: "Processing Error",
+        description: "Failed to analyze the image. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+  
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
   return (
     <div className="relative">
-      <Button 
-        variant="outline" 
-        className="bg-blue-600/80 hover:bg-blue-700 text-white rounded-full h-14 w-14 p-0"
-        onClick={isOpen ? closeCamera : openCamera}
-      >
-        <Camera size={24} />
-      </Button>
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          className="bg-blue-600/80 hover:bg-blue-700 text-white rounded-full h-14 w-14 p-0"
+          onClick={isOpen ? closeCamera : openCamera}
+          disabled={isProcessing}
+        >
+          <Camera size={24} />
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="bg-green-600/80 hover:bg-green-700 text-white rounded-full h-14 w-14 p-0"
+          onClick={triggerFileUpload}
+          disabled={isProcessing || isOpen}
+        >
+          <Upload size={24} />
+        </Button>
+        
+        <input 
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileUpload}
+          disabled={isProcessing}
+        />
+      </div>
       
       {isOpen && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">

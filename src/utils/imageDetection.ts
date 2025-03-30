@@ -53,8 +53,7 @@ const initializeClassifier = () => {
   if (!classifierPromise) {
     classifierPromise = pipeline(
       'image-classification', 
-      'Xenova/mobilenet_v2',  // Use a simple and fast model that works in browser
-      { quantized: true }     // Use quantized model for better performance
+      'Xenova/mobilenet_v2'  // Use a simple and fast model that works in browser
     ).catch(error => {
       console.error('Error initializing image classifier:', error);
       // Reset to allow retry

@@ -65,12 +65,12 @@ const Index = () => {
         </p>
         
         {isAuthenticated && (
-          <div className="flex justify-center mb-8">
-            <div className="bg-blue-900/40 backdrop-blur-sm rounded-full p-3 shadow-lg">
+          <div className="flex flex-col items-center mb-8">
+            <div className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 shadow-lg">
               <CameraDetection />
             </div>
             <p className="text-sm text-blue-300 mt-2 animate-pulse">
-              Click the camera to scan and detect issues
+              Use camera or upload from gallery to detect issues
             </p>
           </div>
         )}
