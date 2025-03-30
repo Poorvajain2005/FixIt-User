@@ -25,7 +25,7 @@ const issueTypes = [
 
 const ReportIssue = () => {
   const navigate = useNavigate();
-  const { addIssue } = useIssues();
+  const { addIssue, selectedIssueType, setSelectedIssueType } = useIssues();
   const { toast } = useToast();
   const [type, setType] = useState<string>("");
   const [description, setDescription] = useState("");
@@ -34,6 +34,18 @@ const ReportIssue = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [showMap, setShowMap] = useState(false);
+
+  // Use the selected issue type if available
+  useEffect(() => {
+    if (selectedIssueType && issueTypes.includes(selectedIssueType)) {
+      setType(selectedIssueType);
+    }
+    
+    // Clear the selected issue type after using it
+    return () => {
+      setSelectedIssueType("");
+    };
+  }, [selectedIssueType, setSelectedIssueType]);
 
   const detectLocation = () => {
     setIsLocating(true);
@@ -186,10 +198,17 @@ const ReportIssue = () => {
                 </Button>
               </div>
               {showMap && (
-                <LocationPicker
-                  onSelect={handleMapLocationSelect}
-                  initialLocation={coordinates}
-                />
+                <div className="mt-2 border rounded-md p-4 bg-muted/20">
+                  <p className="text-sm mb-2">Please enter location manually as the map component has been simplified.</p>
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => setShowMap(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
               )}
             </div>
 

@@ -23,6 +23,8 @@ interface IssueContextType {
   userIssues: Issue[];
   addIssue: (issueData: Omit<Issue, "id" | "userId" | "userName" | "createdAt" | "status" | "progress">) => void;
   updateIssueStatus: (issueId: string, status: IssueStatus, progress: number) => void;
+  selectedIssueType: string;
+  setSelectedIssueType: (type: string) => void;
 }
 
 const IssueContext = createContext<IssueContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const useIssues = () => {
 
 export const IssueProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [selectedIssueType, setSelectedIssueType] = useState<string>("");
   const { user } = useAuth();
 
   useEffect(() => {
@@ -112,6 +115,8 @@ export const IssueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         userIssues,
         addIssue,
         updateIssueStatus,
+        selectedIssueType,
+        setSelectedIssueType,
       }}
     >
       {children}

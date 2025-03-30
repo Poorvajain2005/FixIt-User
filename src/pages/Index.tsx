@@ -1,11 +1,14 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import IssueCard from "@/components/IssueCard";
 import { useAuth } from "@/context/AuthContext";
+import { useIssues } from "@/context/IssueContext";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
+  const { setSelectedIssueType } = useIssues();
+  const navigate = useNavigate();
   
   const issueTypes = [
     {
@@ -45,6 +48,11 @@ const Index = () => {
     }
   ];
 
+  const handleIssueCardClick = (issueTitle: string) => {
+    setSelectedIssueType(issueTitle);
+    navigate(isAuthenticated ? "/report" : "/login");
+  };
+
   return (
     <div className="max-w-6xl mx-auto">
       <section className="text-center text-white py-10">
@@ -58,22 +66,24 @@ const Index = () => {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {issueTypes.map((issue, index) => (
-          <IssueCard
-            key={index}
-            icon={issue.icon}
-            title={issue.title}
-            description={issue.description}
-            path={isAuthenticated ? "/report" : "/login"}
-          />
+          <div key={index} onClick={() => handleIssueCardClick(issue.title)}>
+            <IssueCard
+              icon={issue.icon}
+              title={issue.title}
+              description={issue.description}
+              path="#"
+            />
+          </div>
         ))}
       </section>
 
       <section className="mt-12 text-center">
-        <Link to={isAuthenticated ? "/report" : "/login"}>
-          <Button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 text-lg">
-            📝 Report an Issue
-          </Button>
-        </Link>
+        <Button 
+          className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 text-lg"
+          onClick={() => navigate(isAuthenticated ? "/report" : "/login")}
+        >
+          📝 Report an Issue
+        </Button>
       </section>
     </div>
   );
