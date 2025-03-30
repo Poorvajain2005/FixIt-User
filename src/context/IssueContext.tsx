@@ -15,6 +15,7 @@ export interface Issue {
   createdAt: Date;
   status: IssueStatus;
   progress: number;
+  coordinates?: { lat: number; lng: number };
 }
 
 interface IssueContextType {
