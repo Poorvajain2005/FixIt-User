@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIssues } from "@/context/IssueContext";
-import { MapPin, Loader2, RefreshCw } from "lucide-react";
+import { MapPin, Loader2, RefreshCw, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import LocationPicker from "@/components/LocationPicker";
+import { detectIssueFromImage } from "@/utils/imageDetection";
 
 const issueTypes = [
   "Injured Street Animals",
@@ -34,14 +34,14 @@ const ReportIssue = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [showMap, setShowMap] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
 
-  // Use the selected issue type if available
   useEffect(() => {
     if (selectedIssueType && issueTypes.includes(selectedIssueType)) {
       setType(selectedIssueType);
     }
     
-    // Clear the selected issue type after using it
     return () => {
       setSelectedIssueType("");
     };
@@ -65,7 +65,6 @@ const ReportIssue = () => {
         setCoordinates({ lat: latitude, lng: longitude });
         
         try {
-          // Reverse geocoding to get address from coordinates
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
           );
@@ -94,6 +93,33 @@ const ReportIssue = () => {
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    setImageFile(file);
+    
+    setIsAnalyzingImage(true);
+    try {
+      const detectedType = await detectIssueFromImage(file);
+      
+      if (detectedType) {
+        toast({
+          title: "Issue Detected!",
+          description: `Detected issue type: ${detectedType}`,
+        });
+        setType(detectedType);
+      } else {
+        console.log("No specific issue detected from image");
+      }
+    } catch (error) {
+      console.error("Error analyzing image:", error);
+    } finally {
+      setIsAnalyzingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -225,14 +251,24 @@ const ReportIssue = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">Image (Optional)</Label>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-              />
+              <Label htmlFor="image">
+                Image {isAnalyzingImage ? "(Analyzing...)" : "(Optional)"}
+              </Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className={isAnalyzingImage ? "opacity-50" : ""}
+                  disabled={isAnalyzingImage}
+                />
+                {isAnalyzingImage && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
+              </div>
               <p className="text-xs text-gray-500">
-                Adding images helps authorities better understand the issue
+                {imageFile ? "Image will be analyzed to detect issue type automatically" : "Adding images helps authorities better understand the issue"}
               </p>
             </div>
           </CardContent>

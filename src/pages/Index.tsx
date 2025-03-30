@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import IssueCard from "@/components/IssueCard";
 import { useAuth } from "@/context/AuthContext";
 import { useIssues } from "@/context/IssueContext";
+import CameraDetection from "@/components/CameraDetection";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -62,6 +63,17 @@ const Index = () => {
         <p className="text-xl mb-8">
           Detect and report real-time city problems to make our community better.
         </p>
+        
+        {isAuthenticated && (
+          <div className="flex justify-center mb-8">
+            <div className="bg-blue-900/40 backdrop-blur-sm rounded-full p-3 shadow-lg">
+              <CameraDetection />
+            </div>
+            <p className="text-sm text-blue-300 mt-2 animate-pulse">
+              Click the camera to scan and detect issues
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
